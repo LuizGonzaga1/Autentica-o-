@@ -5,7 +5,7 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(createUserDto: CreateUserDto) {
     const data = {
@@ -13,7 +13,7 @@ export class UserService {
       password: await bcrypt.hash(createUserDto.password, 10),
     };
 
-   const createdUser = await this.prisma.user.create({ data });
+    const createdUser = await this.prisma.user.create({ data });
 
     return {
       ...createdUser,
@@ -21,8 +21,10 @@ export class UserService {
     };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findByEmail(email: string) {
+    this.prisma.user.findUnique({
+      where: { email },
+    });
   }
 
 }
