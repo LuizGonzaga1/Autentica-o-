@@ -9,32 +9,34 @@ import { UserToken } from './models/UserToken';
 @Injectable()
 export class AuthService {
 
-    constructor(private readonly userService: UserService, private readonly jwtService: JwtService) { }
+  constructor(private readonly userService: UserService, private readonly jwtService: JwtService) { }
 
-    async login(user: User): Promise<UserToken {
-        const payload: UserPayload = {
-            sub: user.id,
-            email: user.email,
-            name: user.name,
-        };
+  login(user: User): UserToken {
+    const payload: UserPayload = {
+      sub: user.id,
+      email: user.email,
+      name: user.name
+    };
+    const JwtToken = this.jwtService.sign(payload);
+
+    return {
+      access_token: JwtToken,
+    };
+  }
+
+  async validateUser(email: string, password: string): Promise<User> {
+    const user = await this.userService.findByEmail(email);
+
+    if (user) {
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+
+      if (isPasswordValid) {
         return {
-            access_token: this.jwtService.sign(payload),
-          };
-        }
-      
-        async validateUser(email: string, password: string): Promise<User> {
-          const user = await this.userService.findByEmail(email);
-      
-          if (user) {
-            const isPasswordValid = await bcrypt.compare(password, user.password);
-      
-            if (isPasswordValid) {
-              return {
-                ...user,
-                password: undefined,
-              };
-            }
-          }
-    
-        }
+          ...user,
+          password: undefined,
+        };
       }
+    }
+
+  }
+}
